@@ -5,17 +5,18 @@ NAME = selen
 
 SRCS = main.cpp
 
-OBJS = $(SRCS:.cpp=.o)
+# OBJS = $(SRCS:.cpp=.o)
 
 CFLAGS = -Wall -Wextra -g
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 all: $(NAME)
 
-$(NAME) : $(OBJS)
-	gcc -o $(NAME) $(OBJS)
+$(NAME):
+	g++ $(CFLAGS) -o exec $(SRCS) $(LDFLAGS)
 
-clean:
-	rm -f $(OBJS)
+# clean:
+# 	rm -f $(OBJS)
 
 
 re: clean all
