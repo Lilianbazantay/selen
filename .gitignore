@@ -1,0 +1,6 @@
+bld
+doc
+libselen.a
+build.bat
+Selen.exe
+compile_flags.txt
