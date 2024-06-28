@@ -1,6 +1,6 @@
 bld
 doc
-libselen.a
+lib/libselen.a
 build.bat
 Selen.exe
 compile_flags.txt

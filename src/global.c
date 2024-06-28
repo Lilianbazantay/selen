@@ -1,6 +1,6 @@
 #include "selen.h"
 
-void GlobalInputHandler(SDL_Window *win, SDL_Event event) {
+void GlobalInputHandler(SDL_Event event) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_F11) {
 			if (SDL_GetWindowFlags(win) & SDL_WINDOW_FULLSCREEN) SDL_SetWindowFullscreen(win, 0);

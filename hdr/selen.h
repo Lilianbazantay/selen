@@ -7,13 +7,20 @@
 
 #define FPS 60
 
-extern SDL_bool gameRunning;
-
 enum GameState {TITLE, GAMEPLAY} extern currentState;
 
-void GlobalInputHandler(SDL_Window *win, SDL_Event event);
+extern SDL_bool gameRunning;
 
-void Title(SDL_Window *win, SDL_Renderer *ren);
-void Gameplay(SDL_Window *win, SDL_Renderer *ren);
+extern SDL_Window *win;
+extern SDL_Renderer *ren;
+
+extern Uint32 deltaTime;
+
+extern TTF_Font *fontRegular;
+
+void GlobalInputHandler(SDL_Event event);
+
+void Title();
+void Gameplay();
 
 #endif

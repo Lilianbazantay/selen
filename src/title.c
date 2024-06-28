@@ -1,24 +1,7 @@
 #include "selen.h"
 
-static SDL_bool titleRunning = SDL_TRUE;
-
-static SDL_Point mousePos = {};
-static SDL_Rect startRect, quitRect;
-
-void ButtonDownHandler(SDL_Event event) {
-	if (event.button.button == SDL_BUTTON_LEFT) {
-		if (SDL_PointInRect(&mousePos, &startRect)) {
-			currentState = GAMEPLAY;
-			titleRunning = SDL_FALSE;
-		} else if (SDL_PointInRect(&mousePos, &quitRect)) {
-			gameRunning = SDL_FALSE;
-			titleRunning = SDL_FALSE;
-		}
-	}
-}
-
-void Title(SDL_Window *win, SDL_Renderer *ren) {
-	TTF_Font *fontRegular = TTF_OpenFont("res/fonts/Averia-Regular.ttf", 64);
+void Title() {
+	SDL_bool titleRunning = SDL_TRUE;
 
 	SDL_Surface *backgroundSurf = IMG_Load("res/images/background/title.png");
 	SDL_Texture *backgroundTex = SDL_CreateTextureFromSurface(ren, backgroundSurf);
@@ -29,15 +12,20 @@ void Title(SDL_Window *win, SDL_Renderer *ren) {
 	SDL_Color quitColor = {255, 255, 255, 0};
 
 	SDL_Surface *startSurf = TTF_RenderText_Blended(fontRegular, "Start", startColor);
-	startRect = (SDL_Rect){869 - startSurf->w, 208, startSurf->w, startSurf->h};
+	SDL_Rect startRect = (SDL_Rect){869 - startSurf->w, 208, startSurf->w, startSurf->h};
 
 	SDL_Surface *quitSurf = TTF_RenderText_Blended(fontRegular, "Quit", quitColor);
-	quitRect = (SDL_Rect){869 - quitSurf->w, 304, quitSurf->w, quitSurf->h};
+	SDL_Rect quitRect = (SDL_Rect){869 - quitSurf->w, 304, quitSurf->w, quitSurf->h};
 
 	SDL_Texture *startTex, *quitTex;
 
+	SDL_Point mousePos = {};
+
+	Uint32 startTicks, passedTicks;
 	SDL_Event event;
+
 	while (titleRunning) {
+		startTicks = SDL_GetTicks();
 		quitColor.b = 255;
 
 		SDL_GetMouseState(&mousePos.x, &mousePos.y);
@@ -46,10 +34,19 @@ void Title(SDL_Window *win, SDL_Renderer *ren) {
 				case SDL_QUIT:
 					gameRunning = SDL_FALSE;
 					titleRunning = SDL_FALSE;
+					break;
 				case SDL_MOUSEBUTTONDOWN:
-					ButtonDownHandler(event);
-			GlobalInputHandler(win, event);
+					if (event.button.button == SDL_BUTTON_LEFT) {
+						if (SDL_PointInRect(&mousePos, &startRect)) {
+							currentState = GAMEPLAY;
+							titleRunning = SDL_FALSE;
+						} else if (SDL_PointInRect(&mousePos, &quitRect)) {
+							gameRunning = SDL_FALSE;
+							titleRunning = SDL_FALSE;
+						}
+					}
 			}
+			GlobalInputHandler(event);
 		}
 
 		if (tempAlpha < 255) {
@@ -62,10 +59,10 @@ void Title(SDL_Window *win, SDL_Renderer *ren) {
 		startColor.b = SDL_PointInRect(&mousePos, &startRect) ? 0 : 255;
 		quitColor.b = SDL_PointInRect(&mousePos, &quitRect) ? 0 : 255;
 
-		startSurf = TTF_RenderText_Solid(fontRegular, "Start", startColor);
+		startSurf = TTF_RenderText_Blended(fontRegular, "Start", startColor);
 		startTex = SDL_CreateTextureFromSurface(ren, startSurf);
 
-		quitSurf = TTF_RenderText_Solid(fontRegular, "Quit", quitColor);
+		quitSurf = TTF_RenderText_Blended(fontRegular, "Quit", quitColor);
 		quitTex = SDL_CreateTextureFromSurface(ren, quitSurf);
 
 		SDL_RenderClear(ren);
@@ -77,6 +74,8 @@ void Title(SDL_Window *win, SDL_Renderer *ren) {
 		SDL_FreeSurface(quitSurf);
 		SDL_DestroyTexture(startTex);
 		SDL_DestroyTexture(quitTex);
+
+		passedTicks = SDL_GetTicks() - startTicks;
+		if (passedTicks < deltaTime) SDL_Delay(deltaTime - passedTicks);
 	}
-	TTF_CloseFont(fontRegular);	
 }
