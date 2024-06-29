@@ -9,11 +9,16 @@ LDFLAGS += -lSDL2_image -lSDL2_ttf -lusp10 -lrpcrt4 -lselen
 default: Selen.exe
 	@echo "Successfully compiled!"
 
+clean:
+	rm -f Selen.exe
+	rm -f libselen.a
+	rm -rf bld
+
 Selen.exe: src/main.c lib/libselen.a
 	$(CC) $(CFLAGS) src/main.c $(INCLUDE) $(LDFLAGS) -o Selen.exe
 
-lib/libselen.a: bld bld/global.o bld/title.o bld/gameplay.o
-	ar -rcs lib/libselen.a bld/global.o bld/title.o bld/gameplay.o
+lib/libselen.a: bld bld/global.o bld/title.o bld/gameplay.o bld/battle.o
+	ar -rcs lib/libselen.a bld/global.o bld/title.o bld/gameplay.o bld/battle.o
 
 bld/global.o: src/global.c
 	$(CC) -c src/global.c $(INCLUDE) -o bld/global.o
@@ -23,6 +28,9 @@ bld/title.o: src/title.c
 
 bld/gameplay.o: src/gameplay.c
 	$(CC) -c src/gameplay.c $(INCLUDE) -o bld/gameplay.o
+
+bld/battle.o: src/battle.c
+	$(CC) -c src/battle.c $(INCLUDE) -o bld/battle.o
 
 bld:
 	mkdir bld

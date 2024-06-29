@@ -7,7 +7,7 @@
 
 #define FPS 60
 
-enum GameState {TITLE, GAMEPLAY} extern currentState;
+enum GameState {TITLE, GAMEPLAY, BATTLE} extern currentState;
 
 extern SDL_bool gameRunning;
 
@@ -22,5 +22,6 @@ void GlobalInputHandler(SDL_Event event);
 
 void Title();
 void Gameplay();
+void Battle();
 
 #endif

@@ -29,6 +29,9 @@ int main(int argc, char *argv[]) {
 			case GAMEPLAY:
 				Gameplay();
 				break;
+			case BATTLE:
+				Battle();
+				break;
 		}
 	}
 
