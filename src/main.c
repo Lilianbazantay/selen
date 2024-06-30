@@ -11,7 +11,7 @@ SDL_Renderer *ren;
 
 TTF_Font *fontRegular;
 
-int main(int argc, char *argv[]) {
+int SDL_main(int argc, char *argv[]) {
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
