@@ -16,8 +16,9 @@ extern SDL_Renderer *ren;
 
 extern Uint32 deltaTime;
 
-extern TTF_Font *fontRegular;
+TTF_Font *FontRegular(Uint8 size);
 
+void Delay(Uint32 startTicks);
 void GlobalInputHandler(SDL_Event event);
 
 void Title();

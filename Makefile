@@ -17,11 +17,14 @@ clean:
 Selen.exe: src/main.c lib/libselen.a
 	$(CC) $(CFLAGS) src/main.c $(INCLUDE) $(LDFLAGS) -o Selen.exe
 
-lib/libselen.a: bld bld/global.o bld/title.o bld/gameplay.o bld/battle.o
-	ar -rcs lib/libselen.a bld/global.o bld/title.o bld/gameplay.o bld/battle.o
+lib/libselen.a: bld bld/font.o bld/utils.o bld/title.o bld/gameplay.o bld/battle.o
+	ar -rcs lib/libselen.a bld/font.o bld/utils.o bld/title.o bld/gameplay.o bld/battle.o
 
-bld/global.o: src/global.c
-	$(CC) -c src/global.c $(INCLUDE) -o bld/global.o
+bld/font.o: src/font.c
+	$(CC) -c src/font.c $(INCLUDE) -o bld/font.o
+
+bld/utils.o: src/utils.c
+	$(CC) -c src/utils.c $(INCLUDE) -o bld/utils.o
 
 bld/title.o: src/title.c
 	$(CC) -c src/title.c $(INCLUDE) -o bld/title.o

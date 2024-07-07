@@ -1,5 +1,10 @@
 #include "selen.h"
 
+void Delay(Uint32 startTicks) {
+	Uint32 passedTicks = SDL_GetTicks() - startTicks;
+	if (passedTicks < deltaTime) SDL_Delay(deltaTime - passedTicks);
+}
+
 void GlobalInputHandler(SDL_Event event) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_F11) {

@@ -9,8 +9,6 @@ Uint32 deltaTime = 1000 / FPS;
 SDL_Window *win;
 SDL_Renderer *ren;
 
-TTF_Font *fontRegular;
-
 int SDL_main(int argc, char *argv[]) {
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	IMG_Init(IMG_INIT_PNG);
@@ -18,8 +16,6 @@ int SDL_main(int argc, char *argv[]) {
 
 	win = SDL_CreateWindow("Selen", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 576, SDL_WINDOW_ALLOW_HIGHDPI);
 	ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-	fontRegular = TTF_OpenFont("res/fonts/Averia-Regular.ttf", 64);
 
 	while (gameRunning) {
 		switch (currentState) {
@@ -34,8 +30,6 @@ int SDL_main(int argc, char *argv[]) {
 				break;
 		}
 	}
-
-	TTF_CloseFont(fontRegular);
 
 	SDL_DestroyWindow(win);
 	SDL_DestroyRenderer(ren);

@@ -3,10 +3,7 @@
 
 #include "selen.h"
 
-typedef struct Entity {
-	Uint16 ID;
-	Uint8 x;
-	Uint8 y;
+struct Stats {
 	Uint16 maxHP;
 	Uint8 maxAP;
 	Uint16 maxATK;
@@ -15,38 +12,40 @@ typedef struct Entity {
 	int AP;
 	int ATK;
 	int DEF;
+};
+
+typedef struct Entity {
+	Uint16 ID;
+	char *name;
+	Uint8 x;
+	Uint8 y;
+	Uint8 w;
+	Uint8 h;
+	struct Stats stats;
+	Uint16 delay;
 	SDL_bool isEnemy;
 	SDL_Texture *texture;
 } Entity;
 
 static int queueWidth = 0;
-static Entity *queue[225];
+static Entity queue[394];
 
-Entity *CreateEntity(
-	Uint16 ID, Uint8 x, Uint8 y, Uint16 maxHP, Uint16 maxAP, Uint16 maxATK, Uint16 maxDEF, SDL_bool isEnemy, char *imagePath
-	) {
+Entity CreateEntity(Uint16 ID, char *name, SDL_Rect rect, struct Stats stats, SDL_bool isEnemy, char *imagePath) {
 	SDL_Surface *surface = IMG_Load(imagePath);
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, surface);
 	SDL_FreeSurface(surface);
-	Entity *entity = malloc(sizeof(Entity));
-	entity->ID = ID;
-	entity->x = x;
-	entity->y = y;
-	entity->maxHP = maxHP;
-	entity->maxAP = maxAP;
-	entity->maxATK = maxATK;
-	entity->maxDEF = maxDEF;
-	entity->HP = maxHP;
-	entity->AP = maxAP;
-	entity->ATK = maxATK;
-	entity->DEF = maxDEF;
-	entity->isEnemy = isEnemy;
-	entity->texture = texture;
-	return entity;
+	return (Entity){ID, name, rect.x, rect.y, rect.w, rect.h, stats, 0, isEnemy, texture};
 }
 
-void DrawEntity(Entity *entity) {
-	SDL_RenderCopy(ren, entity->texture, NULL, &(SDL_Rect){32 + 32 * entity->x, 14 + 32 * entity->y, 64, 36});
+void DrawEntity(Entity entity) {
+	// entity.w should not be higher than 64
+	SDL_Rect rect;
+	if (entity.x % 2 == entity.y % 2) {
+		rect = (SDL_Rect){32 + 32 * entity.x, 50 + 18 * entity.y - entity.h, entity.w, entity.h};
+	} else {
+		rect = (SDL_Rect){64 + 32 * entity.x, 50 + 18 * entity.y - entity.h, entity.w, entity.h};
+	}
+	SDL_RenderCopy(ren, entity.texture, NULL, &rect);
 }
 
 void DrawTerrain() {
@@ -64,20 +63,38 @@ void DrawTerrain() {
 	}
 }
 
+int compareByDelay(const void *first, const void *second) {
+	Entity entityFirst = *(Entity *)first;
+	Entity entitySecond = *(Entity *)second;
+	return entityFirst.delay - entitySecond.delay;
+}
+
+int compareByHeight(const void *first, const void *second) {
+	Entity entityFirst = *(Entity *)first;
+	Entity entitySecond = *(Entity *)second;
+	return entityFirst.h - entitySecond.h;
+}
+
 void Battle() {
 	SDL_bool battleRunning = SDL_TRUE;
 
 	SDL_Point mousePos;
 
 	// test
-	Entity *slime = CreateEntity(0, 0, 0, 100, 100, 0, 0, SDL_TRUE, "res/images/monsters/slime.png");
-	queue[0] = slime;
-	queueWidth = 1;
+	struct Stats selenStats = {1000, 100, 100, 50, 1000, 100, 100, 50};
+	SDL_Rect selenRect = {5, 8, 64, 64};
+	Entity selen = CreateEntity(0, "Selen", selenRect, selenStats, SDL_FALSE, "res/images/characters/selen.png");
+	struct Stats slimeStats = {200, 100, 100, 50, 200, 100, 100, 50};
+	SDL_Rect slimeRect = {2, 3, 64, 36};
+	Entity slime = CreateEntity(0, "Slime", slimeRect, slimeStats, SDL_TRUE, "res/images/monsters/slime.png");
+	queue[0] = selen;
+	queue[1] = slime;
+	queueWidth = 2;
 
 	Uint8 cellX, cellY;
 	float tempCellX, tempCellY;
 	Uint16 baseX, baseY;
-	Uint32 startTicks, passedTicks;
+	Uint32 startTicks;
 
 	SDL_Event event;
 	while (battleRunning) {
@@ -95,6 +112,7 @@ void Battle() {
 
 		SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
 		SDL_RenderClear(ren);
+
 		if (mousePos.x >= 32 && mousePos.y >= 18 && mousePos.x <= 992 && mousePos.y <= 572) {
 			if (mousePos.x < 64 && mousePos.y < 32) {
 				cellX = 0;
@@ -129,11 +147,14 @@ void Battle() {
 			SDL_RenderDrawLines(ren, (SDL_Point[2]){{baseX, baseY}, {baseX + 64, baseY}}, 2);
 		}
 		DrawTerrain();
-		DrawEntity(slime);
-		SDL_RenderPresent(ren);
+		qsort(queue, queueWidth, sizeof(Entity), compareByHeight);
+		for (Uint8 entityIdx = 0; entityIdx < queueWidth; entityIdx++)
+			DrawEntity(queue[entityIdx]);
 
-		passedTicks = SDL_GetTicks() - startTicks;
-		if (passedTicks < deltaTime) SDL_Delay(deltaTime - passedTicks);
+		SDL_RenderPresent(ren);
+		Delay(startTicks);
 	}
-	free(slime);	// test
+
+	for (Uint8 entityIdx = 0; entityIdx < queueWidth; entityIdx++)
+		SDL_DestroyTexture(queue[entityIdx].texture);
 }
