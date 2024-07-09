@@ -4,10 +4,12 @@ enum GameState currentState = TITLE;
 
 SDL_bool gameRunning = SDL_TRUE;
 
-Uint32 deltaTime = 1000 / FPS;
+Uint32 deltaTime = 17;
 
 SDL_Window *win;
 SDL_Renderer *ren;
+
+SDL_Point mousePos;
 
 int SDL_main(int argc, char *argv[]) {
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_EVENTS);

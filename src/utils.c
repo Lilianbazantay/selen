@@ -13,3 +13,32 @@ void GlobalInputHandler(SDL_Event event) {
 		}
 	}
 }
+
+Sprite SpriteFromImage(char *imagePath) {
+	SDL_Surface *surface = IMG_Load(imagePath);
+	Sprite sprite = {SDL_CreateTextureFromSurface(ren, surface), (SDL_Rect){.w=surface->w, .h=surface->h}};
+	SDL_FreeSurface(surface);
+	return sprite;
+}
+
+Sprite SpriteFromText(TTF_Font *font, const char *text, SDL_Color fg) {
+	SDL_Surface *surface = TTF_RenderText_Blended(font, text, fg);
+	Sprite sprite = {SDL_CreateTextureFromSurface(ren, surface), (SDL_Rect){.w=surface->w, .h=surface->h}};
+	SDL_FreeSurface(surface);
+	return sprite;
+}
+
+Sprite UpdateSpriteFromText(Sprite sprite, TTF_Font *font, const char *text, SDL_Color fg) {
+	SDL_Surface *surface = TTF_RenderText_Blended(font, text, fg);
+	sprite.texture = SDL_CreateTextureFromSurface(ren, surface);
+	SDL_FreeSurface(surface);
+	return sprite;
+}
+
+SDL_bool CursorInSprite(Sprite sprite) {
+	return SDL_PointInRect(&mousePos, &sprite.rect);
+}
+
+void RenderCopySprite(Sprite sprite) {
+	SDL_RenderCopy(ren, sprite.texture, NULL, &sprite.rect);
+}

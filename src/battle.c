@@ -12,40 +12,34 @@ struct Stats {
 	int AP;
 	int ATK;
 	int DEF;
+	Uint16 delay;
 };
 
 typedef struct Entity {
 	Uint16 ID;
 	char *name;
-	Uint8 x;
-	Uint8 y;
-	Uint8 w;
-	Uint8 h;
+	Uint8 posX;
+	Uint8 posY;
+	enum Direction direction;
 	struct Stats stats;
-	Uint16 delay;
+	Sprite sprite;
 	SDL_bool isEnemy;
-	SDL_Texture *texture;
 } Entity;
 
 static int queueWidth = 0;
 static Entity queue[394];
 
-Entity CreateEntity(Uint16 ID, char *name, SDL_Rect rect, struct Stats stats, SDL_bool isEnemy, char *imagePath) {
-	SDL_Surface *surface = IMG_Load(imagePath);
-	SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, surface);
-	SDL_FreeSurface(surface);
-	return (Entity){ID, name, rect.x, rect.y, rect.w, rect.h, stats, 0, isEnemy, texture};
-}
-
 void DrawEntity(Entity entity) {
-	// entity.w should not be higher than 64
+	// entity.sprite.rect.w should not be higher than 64
 	SDL_Rect rect;
-	if (entity.x % 2 == entity.y % 2) {
-		rect = (SDL_Rect){32 + 32 * entity.x, 50 + 18 * entity.y - entity.h, entity.w, entity.h};
+	if (entity.sprite.rect.x % 2 == entity.sprite.rect.y % 2) {
+		entity.sprite.rect.x = 32 + 32 * entity.posX;
+		entity.sprite.rect.y = 50 + 18 * entity.posY - entity.sprite.rect.h;
 	} else {
-		rect = (SDL_Rect){64 + 32 * entity.x, 50 + 18 * entity.y - entity.h, entity.w, entity.h};
+		entity.sprite.rect.x = 64 + 32 * entity.posX;
+		entity.sprite.rect.y = 68 + 18 * entity.posY - entity.sprite.rect.h;
 	}
-	SDL_RenderCopy(ren, entity.texture, NULL, &rect);
+	SDL_RenderCopy(ren, entity.sprite.texture, NULL, &entity.sprite.rect);
 }
 
 void DrawTerrain() {
@@ -66,13 +60,13 @@ void DrawTerrain() {
 int compareByDelay(const void *first, const void *second) {
 	Entity entityFirst = *(Entity *)first;
 	Entity entitySecond = *(Entity *)second;
-	return entityFirst.delay - entitySecond.delay;
+	return entityFirst.stats.delay - entitySecond.stats.delay;
 }
 
 int compareByHeight(const void *first, const void *second) {
 	Entity entityFirst = *(Entity *)first;
 	Entity entitySecond = *(Entity *)second;
-	return entityFirst.h - entitySecond.h;
+	return entityFirst.sprite.rect.h - entitySecond.sprite.rect.h;
 }
 
 void Battle() {
@@ -81,12 +75,10 @@ void Battle() {
 	SDL_Point mousePos;
 
 	// test
-	struct Stats selenStats = {1000, 100, 100, 50, 1000, 100, 100, 50};
-	SDL_Rect selenRect = {5, 8, 64, 64};
-	Entity selen = CreateEntity(0, "Selen", selenRect, selenStats, SDL_FALSE, "res/images/characters/selen.png");
-	struct Stats slimeStats = {200, 100, 100, 50, 200, 100, 100, 50};
-	SDL_Rect slimeRect = {2, 3, 64, 36};
-	Entity slime = CreateEntity(0, "Slime", slimeRect, slimeStats, SDL_TRUE, "res/images/monsters/slime.png");
+	struct Stats selenStats = {1000, 100, 100, 50, 1000, 100, 100, 50, 0};
+	Entity selen = {0, "Selen", 5, 5, NW, selenStats, SpriteFromImage("res/images/characters/selen.png"), SDL_FALSE};
+	struct Stats slimeStats = {200, 100, 100, 50, 200, 100, 100, 50, 0};
+	Entity slime = {0, "Slime", 2, 2, SE, slimeStats, SpriteFromImage("res/images/monsters/slime.png"), SDL_TRUE};
 	queue[0] = selen;
 	queue[1] = slime;
 	queueWidth = 2;
@@ -156,5 +148,5 @@ void Battle() {
 	}
 
 	for (Uint8 entityIdx = 0; entityIdx < queueWidth; entityIdx++)
-		SDL_DestroyTexture(queue[entityIdx].texture);
+		SDL_DestroyTexture(queue[entityIdx].sprite.texture);
 }

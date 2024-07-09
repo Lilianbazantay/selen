@@ -12,22 +12,22 @@ void Title() {
 
 	TTF_Font *fontTitle = FontRegular(64);
 
-	SDL_Surface *startSurfHover = TTF_RenderText_Blended(fontTitle, "Start", (SDL_Color){255, 255, 0, 255});
-	SDL_Rect startRect = (SDL_Rect){869 - startSurfHover->w, 208, startSurfHover->w, startSurfHover->h};
+	Sprite startSprite = SpriteFromText(fontTitle, "Start", color);
+	startSprite.rect.x = 869 - startSprite.rect.w;
+	startSprite.rect.y = 208;
+	SDL_Log("%d", startSprite.rect.h);
 
-	SDL_Surface *quitSurfHover = TTF_RenderText_Blended(fontTitle, "Quit", (SDL_Color){255, 255, 0, 255});
-	SDL_Rect quitRect = (SDL_Rect){869 - startSurfHover->w, 304, startSurfHover->w, startSurfHover->h};
+	Sprite startSpriteHover = SpriteFromText(fontTitle, "Start", (SDL_Color){255, 255, 0, 255});
+	startSpriteHover.rect.x = 869 - startSpriteHover.rect.w;
+	startSpriteHover.rect.y = 208;
 
-	SDL_Texture *startTexHover = SDL_CreateTextureFromSurface(ren, startSurfHover);
-	SDL_FreeSurface(startSurfHover);
-	SDL_Texture *quitTexHover = SDL_CreateTextureFromSurface(ren, quitSurfHover);
-	SDL_FreeSurface(quitSurfHover);
+	Sprite quitSprite = SpriteFromText(fontTitle, "Quit", color);
+	quitSprite.rect.x = 869 - quitSprite.rect.w;
+	quitSprite.rect.y = 304;
 
-	SDL_bool deleteSurf = SDL_FALSE;
-	SDL_Surface *startSurf, *quitSurf;
-	SDL_Texture *startTex, *quitTex;
-
-	SDL_Point mousePos = {};
+	Sprite quitSpriteHover = SpriteFromText(fontTitle, "Quit", (SDL_Color){255, 255, 0, 255});
+	quitSpriteHover.rect.x = 869 - quitSpriteHover.rect.w;
+	quitSpriteHover.rect.y = 304;
 
 	Uint32 startTicks;
 	SDL_Event event;
@@ -44,10 +44,10 @@ void Title() {
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 					if (event.button.button == SDL_BUTTON_LEFT) {
-						if (SDL_PointInRect(&mousePos, &startRect)) {
+						if (CursorInSprite(startSprite)) {
 							currentState = GAMEPLAY;
 							titleRunning = SDL_FALSE;
-						} else if (SDL_PointInRect(&mousePos, &quitRect)) {
+						} else if (CursorInSprite(quitSprite)) {
 							gameRunning = SDL_FALSE;
 							titleRunning = SDL_FALSE;
 						}
@@ -57,36 +57,27 @@ void Title() {
 		}
 
 		if (tempAlpha < 255) {
-			tempAlpha += 255.f / FPS * 2;
-			if (tempAlpha > 255) {
-				tempAlpha = 255;
-				deleteSurf = SDL_TRUE;
-			}
+			tempAlpha += 255.f * deltaTime * 0.002;
+			if (tempAlpha > 255) tempAlpha = 255;
 			color.a = tempAlpha;
-			startSurf = TTF_RenderText_Blended(fontTitle, "Start", color);
-			startTex = SDL_CreateTextureFromSurface(ren, startSurf);
-			quitSurf = TTF_RenderText_Blended(fontTitle, "Quit", color);
-			quitTex = SDL_CreateTextureFromSurface(ren, quitSurf);
-			if (deleteSurf) {
-				SDL_FreeSurface(startSurf);
-				SDL_FreeSurface(quitSurf);
-			}
+			startSprite = UpdateSpriteFromText(startSprite, fontTitle, "Start", color);
+			quitSprite = UpdateSpriteFromText(quitSprite, fontTitle, "Quit", color);
 		}
 
 		SDL_RenderClear(ren);
 
-		if (SDL_PointInRect(&mousePos, &startRect)) SDL_RenderCopy(ren, startTexHover, NULL, &startRect);
-		else SDL_RenderCopy(ren, startTex, NULL, &startRect);
-		if (SDL_PointInRect(&mousePos, &quitRect)) SDL_RenderCopy(ren, quitTexHover, NULL, &quitRect);
-		else SDL_RenderCopy(ren, quitTex, NULL, &quitRect);
+		if (CursorInSprite(startSprite)) RenderCopySprite(startSpriteHover);
+		else RenderCopySprite(startSprite);
+		if (CursorInSprite(quitSprite)) RenderCopySprite(quitSpriteHover);
+		else RenderCopySprite(quitSprite);
 
 		SDL_RenderPresent(ren);
 		Delay(startTicks);
 	}
 
-	SDL_DestroyTexture(startTex);
-	SDL_DestroyTexture(startTexHover);
-	SDL_DestroyTexture(quitTex);
-	SDL_DestroyTexture(quitTexHover);
+	SDL_DestroyTexture(startSprite.texture);
+	SDL_DestroyTexture(startSpriteHover.texture);
+	SDL_DestroyTexture(quitSprite.texture);
+	SDL_DestroyTexture(quitSpriteHover.texture);
 	TTF_CloseFont(fontTitle);
 }
