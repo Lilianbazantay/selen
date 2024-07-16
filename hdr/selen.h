@@ -14,26 +14,29 @@ enum GameState {TITLE, GAMEPLAY, BATTLE} extern currentState;
 enum Direction {NW, N, NE, W, E, SW, S, SE};
 
 typedef struct Sprite {
-	SDL_Texture *texture;
+	SDL_Texture* texture;
 	SDL_Rect rect;
 } Sprite;
 
 extern SDL_bool gameRunning;
+extern SDL_bool loopRunning;
 
-extern SDL_Window *win;
-extern SDL_Renderer *ren;
+extern SDL_Window* win;
+extern SDL_Renderer* ren;
 
 extern Uint32 deltaTime;
+extern Uint32 startTicks;
 
 extern SDL_Point mousePos;
 
-TTF_Font *FontRegular(Uint8 size);
+TTF_Font* FontRegular(Uint8 size);
 
-void Delay(Uint32 startTicks);
+void GlobalLoopStart();
+void GlobalLoopEnd();
 void GlobalInputHandler(SDL_Event event);
-Sprite SpriteFromImage(char *imagePath);
-Sprite SpriteFromText(TTF_Font *font, const char *text, SDL_Color fg);
-Sprite UpdateSpriteFromText(Sprite sprite, TTF_Font *font, const char *text, SDL_Color fg);
+Sprite SpriteFromImage(char* imagePath);
+Sprite SpriteFromText(TTF_Font* font, const char* text, SDL_Color fg);
+Sprite UpdateSpriteFromText(Sprite sprite, TTF_Font* font, const char *text, SDL_Color fg);
 SDL_bool CursorInSprite(Sprite sprite);
 void RenderCopySprite(Sprite sprite);
 

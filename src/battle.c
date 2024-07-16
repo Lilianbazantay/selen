@@ -17,7 +17,7 @@ struct Stats {
 
 typedef struct Entity {
 	Uint16 ID;
-	char *name;
+	char* name;
 	Uint8 posX;
 	Uint8 posY;
 	enum Direction direction;
@@ -26,34 +26,27 @@ typedef struct Entity {
 	SDL_bool isEnemy;
 } Entity;
 
-static int queueWidth = 0;
+static Uint16 queueWidth = 0;
 static Entity queue[394];
 
 void DrawEntity(Entity entity) {
 	// entity.sprite.rect.w should not be higher than 64
 	SDL_Rect rect;
-	if (entity.sprite.rect.x % 2 == entity.sprite.rect.y % 2) {
-		entity.sprite.rect.x = 32 + 32 * entity.posX;
-		entity.sprite.rect.y = 50 + 18 * entity.posY - entity.sprite.rect.h;
-	} else {
-		entity.sprite.rect.x = 64 + 32 * entity.posX;
-		entity.sprite.rect.y = 68 + 18 * entity.posY - entity.sprite.rect.h;
-	}
+	entity.sprite.rect.x = 480 + 32 * entity.posX - 32 * entity.posY;
+	entity.sprite.rect.y = -202 + 18 * (entity.posX + entity.posY) - entity.sprite.rect.h;
 	SDL_RenderCopy(ren, entity.sprite.texture, NULL, &entity.sprite.rect);
 }
 
 void DrawTerrain() {
 	SDL_SetRenderDrawColor(ren, 255, 213, 6, 255);
 	Uint16 baseX, baseY;
-	for (Uint8 y = 0; y < 15; y++) {
-		for (Uint8 x = 0; x < 15; x++) {
-			baseX = 32 + 64 * x;
-			baseY = 32 + 36 * y;
-			SDL_Point points[5] = {
-				{baseX, baseY}, {baseX + 32, baseY - 18}, {baseX + 64, baseY}, {baseX + 32, baseY + 18}, {baseX, baseY}
-			};
-			SDL_RenderDrawLines(ren, points, 5);
-		}
+	for (Uint8 y = 0; y < 15; ++y) for (Uint8 x = 0; x < 15; ++x) {
+		baseX = 32 + 64 * x;
+		baseY = 32 + 36 * y;
+		SDL_Point points[5] = {
+			{baseX, baseY}, {baseX + 32, baseY - 18}, {baseX + 64, baseY}, {baseX + 32, baseY + 18}, {baseX, baseY}
+		};
+		SDL_RenderDrawLines(ren, points, 5);
 	}
 }
 
@@ -69,67 +62,48 @@ int compareByHeight(const void *first, const void *second) {
 	return entityFirst.sprite.rect.h - entitySecond.sprite.rect.h;
 }
 
-void Battle() {
-	SDL_bool battleRunning = SDL_TRUE;
+double radians(double degree) {
+	return degree * M_PI / 180;
+}
 
-	SDL_Point mousePos;
+void Battle() {
+	loopRunning = SDL_TRUE;
 
 	// test
 	struct Stats selenStats = {1000, 100, 100, 50, 1000, 100, 100, 50, 0};
-	Entity selen = {0, "Selen", 5, 5, NW, selenStats, SpriteFromImage("res/images/characters/selen.png"), SDL_FALSE};
+	Sprite selenSprite = SpriteFromImage("res/images/characters/selen.png");
+	Entity selen = {0, "Selen", 14, 14, NW, selenStats, selenSprite, SDL_FALSE};
 	struct Stats slimeStats = {200, 100, 100, 50, 200, 100, 100, 50, 0};
-	Entity slime = {0, "Slime", 2, 2, SE, slimeStats, SpriteFromImage("res/images/monsters/slime.png"), SDL_TRUE};
+	Sprite slimeSprite = SpriteFromImage("res/images/monsters/slime.png");
+	Entity slime = {0, "Slime", 0, 14, SE, slimeStats, slimeSprite, SDL_TRUE};
 	queue[0] = selen;
 	queue[1] = slime;
 	queueWidth = 2;
 
 	Uint8 cellX, cellY;
-	float tempCellX, tempCellY;
+	float cellSideWidth = sqrt(pow(32, 2) + pow(18, 2));
+	float widthX, widthY;
 	Uint16 baseX, baseY;
-	Uint32 startTicks;
 
 	SDL_Event event;
-	while (battleRunning) {
-		startTicks = SDL_GetTicks();
-
-		SDL_GetMouseState(&mousePos.x, &mousePos.y);
+	while (loopRunning) {
+		GlobalLoopStart();
 
 		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				gameRunning = SDL_FALSE;
-				battleRunning = SDL_FALSE;
-			}
 			GlobalInputHandler(event);
 		}
 
-		SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-		SDL_RenderClear(ren);
-
-		if (mousePos.x >= 32 && mousePos.y >= 18 && mousePos.x <= 992 && mousePos.y <= 572) {
-			if (mousePos.x < 64 && mousePos.y < 32) {
-				cellX = 0;
-				cellY = 0;
-			} else {
-				tempCellX = (mousePos.x - 64.f) / 32;
-				tempCellY = (mousePos.y - 32.f) / 18;
-				cellX = round(tempCellX);
-				cellY = round(tempCellY);
-				if (cellX % 2 != cellY % 2) {
-					tempCellX = cellX - tempCellX;
-					tempCellY = cellY - tempCellY;
-					if (fabs(tempCellX) >= fabs(tempCellY)) {
-						if (tempCellX >= 0) cellX -= 1;
-						else cellX += 1;
-					} else {
-						if (tempCellY >= 0) cellY -= 1;
-						else cellY += 1;
-					}
-				}
-			}
-			baseX = 32 + 32 * cellX;
-			baseY = 32 + 18 * cellY;
+		if (mousePos.x >= 32 && mousePos.y >= 14 && mousePos.x <= 992 && mousePos.y <= 572) {
+			widthX = (mousePos.x - 32) / sin(radians(60));
+			widthY = (mousePos.y - 14) / sin(radians(30));
+			// SDL_Log("wx: %f\twy: %f", widthX, widthY);
+			cellX = floor(widthX / cellSideWidth);
+			cellY = floor(widthY / cellSideWidth);
+			// SDL_Log("cx: %i\tcy: %i\n", cellX, cellY);
+			baseX = 480 + 32 * cellX - 32 * cellY;
+			baseY = -220 + 18 * (cellX + cellY);
 			SDL_SetRenderDrawColor(ren, 0, 127, 255, 255);
-			for (Uint8 height = 18; height > 0; height--) {
+			for (Uint8 height = 18; height > 0; --height) {
 				SDL_Point points[5] = {
 					{baseX, baseY}, {baseX + 32, baseY - height}, {baseX + 64, baseY}, {baseX + 32, baseY + height},
 					{baseX, baseY}
@@ -140,13 +114,10 @@ void Battle() {
 		}
 		DrawTerrain();
 		qsort(queue, queueWidth, sizeof(Entity), compareByHeight);
-		for (Uint8 entityIdx = 0; entityIdx < queueWidth; entityIdx++)
-			DrawEntity(queue[entityIdx]);
+		for (Uint8 entityIdx = 0; entityIdx < queueWidth; ++entityIdx) DrawEntity(queue[entityIdx]);
 
-		SDL_RenderPresent(ren);
-		Delay(startTicks);
+		GlobalLoopEnd();
 	}
 
-	for (Uint8 entityIdx = 0; entityIdx < queueWidth; entityIdx++)
-		SDL_DestroyTexture(queue[entityIdx].sprite.texture);
+	for (Uint8 entityIdx = 0; entityIdx < queueWidth; ++entityIdx) SDL_DestroyTexture(queue[entityIdx].sprite.texture);
 }

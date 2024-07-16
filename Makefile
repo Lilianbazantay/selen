@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -g -Wall -Dmain=SDL_main
+CFLAGS := -g -Wall -Os -Dmain=SDL_main
 INCLUDE := -Ihdr/SDL2 -Ihdr
 LDFLAGS = -Llib -lmingw32 -lSDL2main -lSDL2 -mwindows
 LDFLAGS += -Wl,--dynamicbase -Wl,--nxcompat -Wl,--high-entropy-va -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32

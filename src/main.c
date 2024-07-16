@@ -3,15 +3,17 @@
 enum GameState currentState = TITLE;
 
 SDL_bool gameRunning = SDL_TRUE;
+SDL_bool loopRunning;
 
 Uint32 deltaTime = 17;
+Uint32 startTicks;
 
-SDL_Window *win;
-SDL_Renderer *ren;
+SDL_Window* win;
+SDL_Renderer* ren;
 
 SDL_Point mousePos;
 
-int SDL_main(int argc, char *argv[]) {
+int SDL_main(int argc, char** argv) {
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
@@ -33,8 +35,8 @@ int SDL_main(int argc, char *argv[]) {
 		}
 	}
 
-	SDL_DestroyWindow(win);
 	SDL_DestroyRenderer(ren);
+	SDL_DestroyWindow(win);
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
